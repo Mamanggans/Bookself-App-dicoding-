@@ -1,206 +1,157 @@
-const BELUM_DIBACA = "incompleteBookshelfList";
-const CUDAH_DIBACA = "completeBookshelfList";
-const BOOK_ITEMID = "itemId";
+const UNCOMPLETED_LIST_TODO_ID = "todos";
 
+function addTodo() {
+const uncompletedTODOList = document.getElementById(UNCOMPLETED_LIST_TODO_ID);
 
+const textTodo = document.getElementById("title").value; // buat texttodo dengan memanggil title di html 
+const timestamp = document.getElementById("date").value; // buat timestamp dengan memanggil date di html 
+console.log("todo" + textTodo); // untuk ie di browser 
+console.log("timestamp" + timestamp);
 
-function makebook(title, penulis, tahun, isCompleted) {
+// for (let i = 0; i < 10; i++) // ini artinya jika i sama dengan 0 (let i = 0) maka i akan diulang sampe 10 kali dari nol(i < 10) dengan nambahi 1 per 1 
+    const todo = makeTodo(textTodo, timestamp); // buat variabel atau elemen baru dengan memanngil fungsi makeTodo (masukin data dalam kontainer )
+                                                // lalu masukin variabel text todo dan timestamp kedalam container yang dibuat oleh maketodo
+    uncompletedTODOList.append(todo); // masukan variabel fungsi uncompletedTODOList kedalam fungsi make todo 
 
-    const textTitle = document.createElement("h3");
-    textTitle.setAttribute("id","judul")
-    textTitle.innerText = title;
+}
+function makeTodo(data, timestamp, isCompleted) {
+ 
+    const textTitle = document.createElement("h2"); // membuat elemen / variabel h2 pada html kita 
+    textTitle.innerText = data; // masukan kata kata nya 
 
-    const textpenulis = document.createElement("p");
-    textpenulis.setAttribute("id","penulis")
-    textpenulis.innerText = penulis;
+    const textTimestamp = document.createElement("p");
+    textTimestamp.innerText = timestamp;
 
-    const yearbook = document.createElement("p");
-    yearbook.setAttribute("id", "year");
-    yearbook.innerText = tahun;
+    const textContainer = document.createElement("div"); // membuat kelas elemen div dengan class inner d
+    textContainer.classList.add("inner") // menamai nya dengan denga nama inner 
+    textContainer.append(textTitle, textTimestamp); // dan masukan textitle dan textimestamp dengan append ke dalam html sehingga bentuk nya jadi 
+    /* <div class="inner">
+    <h2>Tugas Android</h2>
+    <p>2021-05-01</p>
+    </div> */
+    const container = document.createElement("div"); // buat container div baru 
+    container.classList.add("item", "shadow") // kasih kelas item dan shadow 
+    container.append(textContainer); // masukan textcontainer didalamnya sehingga bentuk nya jadi
 
+    // <div class="item shadow">
+    // <div class="inner">
+    //     <h2>Tugas Android</h2>
+    //     <p>2021-05-01</p>
+    // </div>
+    // </div>
 
-
-    const textContainer = document.createElement("div");
-    textContainer.classList.add("book_item");
-    textContainer.append(textTitle, textpenulis, yearbook,);
-
-    const container = document.createElement("div");
-    container.classList.add("action");
-    container.append(textContainer);
-
-    if (isCompleted) {
-        textContainer.append(
-            createUndoButton(),
-            createTrashButton()
-        );
+    if(isCompleted){
+        container.append(
+            createTrashButton(),
+            createUndoButton()); // button yang ada di is completed dipanggil kesini 
     } else {
-        textContainer.append(
-            createCheckButton(),
-            createTrashButton()
-        );
+        container.append(createCheckButton());
+    } 
+    return container; // Lalu kita gunakan return statement untuk mengembalikan nilai variabel container yang telah dibuat tadi.
     }
 
-    return textContainer;
-}
-
-function createButton(buttonTypeClass, eventListener) {
-    const button = document.createElement("button");
-    button.classList.add(buttonTypeClass);
-    button.addEventListener("click", function (event) {
-        
-        eventListener(event);
-        event.stopPropagation();
-    });
-    return button;
-}
-
-function createUndoButton() {
-    return createButton("green2", function (event) {
-        createButton.innerText = "Masukkan Buku ke Rak <span>Belum selesai dibaca</span>";  
-        undoTaskFromCompleted(event.target.parentElement);
-        
-    });
-}
-
-function createTrashButton() {
-    return createButton("red", function (event) {
-        createButton.innerText = "Masukkan Buku ke Rak <span>Belum selesai dibaca</span>";  
-        removeTaskFromCompleted(event.target.parentElement);
-    });
-}
-
-function createCheckButton() {
-    return createButton("green", function (event) {
-        createButton.innerText = "Masukkan Buku ke Rak <span>Belum selesai dibaca</span>";  
-        addTaskToCompleted(event.target.parentElement);
-    });
-}
-
-function addbook() {
-    const belumdibaca = document.getElementById(BELUM_DIBACA);
-    const textTitle = document.getElementById("inputBookTitle").value;
-    const author =  "penulis : " + document.getElementById("inputBookAuthor").value;
-    const year = "tahun : " + document.getElementById("inputBookYear").value;
-
-
-
-    const book = makebook(textTitle, author, year, false);
-    const bookObject = composeBookObject(textTitle, author, year, false);
-    
-    book[BOOK_ITEMID] = bookObject.id;
-    books_list.push(bookObject);
-
-    belumdibaca.append(book);
-    updateDataToStorage();
-}
-function checkbook() {
-    const listBookCompleted = document.getElementById(CUDAH_DIBACA);
-    const textTitle = document.getElementById("inputBookTitle").value;
-    const taskbookauthor = "penulis : " + document.getElementById("inputBookAuthor").value;
-    const taskyearbook = "tahun : " + document.getElementById("inputBookYear").value;
-
-    const newbook = makebook(textTitle, taskbookauthor,taskyearbook, true);
-    const bookObject = composeBookObject(textTitle, taskbookauthor,taskyearbook, true);
-
-    newbook[BOOK_ITEMID] = bookObject.id;
-    books_list.push(bookObject);
-
-    listBookCompleted.append(newbook);
-
-    updateDataToStorage();
-
-}
-
-function addTaskToCompleted(taskElement) {
-    const listBookCompleted = document.getElementById(CUDAH_DIBACA);
-    const taskbookTitle = taskElement.querySelector(".book_item > h3").innerText;
-    const taskbookauthor = taskElement.querySelector(".book_item > p").innerText;
-    const taskyearbook = document.getElementById("year").innerText;
-
-    const newbook = makebook(taskbookTitle, taskbookauthor,taskyearbook, true);
-    
-
-    const book = findbook(taskElement[BOOK_ITEMID]);
-    book.isCompleted = true;
-    newbook[BOOK_ITEMID] = book.id;
-
-    listBookCompleted.append(newbook);
-    taskElement.remove();
-
-    updateDataToStorage();
-}
-
-function removeTaskFromCompleted(taskElement) {
-
-    const bookPosition = findBookIndex(taskElement[BOOK_ITEMID]);
-    books_list.splice(bookPosition, 1);
-
-    taskElement.remove();
-    updateDataToStorage();
-}
-
-function undoTaskFromCompleted(taskElement) {
-    const listBookUncompleted = document.getElementById(BELUM_DIBACA);
-    const taskbookTitle = taskElement.querySelector(".book_item > h3").innerText;
-    const taskbookauthor = taskElement.querySelector(".book_item > p").innerText;
-    const taskyearbook = document.getElementById("year").innerText;
-    
-    const newbook = makebook(taskbookTitle, taskbookauthor,taskyearbook, false);
-
-    const book = findbook(taskElement[BOOK_ITEMID]);
-    book.isCompleted = false;
-    newbook[BOOK_ITEMID] = book.id;
-
-    listBookUncompleted.append(newbook);
-    taskElement.remove();
-    
-    updateDataToStorage();
-}
-function refreshDataFrombook() {
-    const listBookUncompleted = document.getElementById(BELUM_DIBACA);
-    let listBookCompleted = document.getElementById(CUDAH_DIBACA);
-
-    for(book of books_list){
-        const newbook = makebook(book.bookTitle, book.author, book.yearbook, book.isCompleted);
-        newbook[BOOK_ITEMID] = book.id;
-
-        if(book.isCompleted){
-            listBookCompleted.append(newbook);
-        } else {
-            listBookUncompleted.append(newbook);
+    // membuat button menandai sudah selesai (button checlis yang disamping)
+    function createButton(buttonTypeClass , eventListener) { // buat  button dengan class yang didapat dari parameter buttontypeclass 
+        const button = document.createElement("button");
+        button.classList.add(buttonTypeClass);
+        button.addEventListener("click", function (event) { // diberikan sebuah listener ketika diklik 
+            eventListener(event);
+        }); // Penjelasan dari kode tersebut adalah, kita membuat sebuah elemen button dengan class yang didapat dari parameter buttonTypeClass. 
+            // Lalu button tersebut diberi listener ketika diklik. Ketika button tersebut diklik maka fungsi pada parameter eventListener akan dijalankan.
+        return button; // jan lupa majikal words 
         }
-    }
-}
-function fungsigantibutton() {
-    var btn = document.getElementById("submit-belu");
-    var check = document.getElementById("inputBookIsComplete")
+    const COMPLETED_LIST_TODO_ID = "completed-todos"; // variabel konstan yang bersifat global untuk menampung 
+                                                      // id dari elemen container todo yang sudah selesai
+                                                      // biar dimasukin di id div di html
     
-    if (btn.style.backgroundColor == "rgb(137, 235, 1)") {
-          btn.style.backgroundColor = "rgb(100, 149, 237)"
-          btn.innerHTML = "Masukkan Buku ke Rak <span>Belum selesai dibaca</span>";  
-          btn.style.color = "white"
-      }else {
-          btn.style.backgroundColor = "rgb(137, 235, 1)"
-          btn.innerHTML = "Masukkan Buku ke Rak <span>Sudah selesai dibaca</span>";
-          btn.style.color = "black"
-      }}
+    function addTaskToCompleted(taskElement) {
+        const taskTitle = taskElement.querySelector(".inner > h2") // manggil div yang kita buat diatas trus dibikin disini dengang is h2 
+        const taskTimestamp = taskElement.querySelector(".inner > p").innerText; // sama cuman abis h2 ada p
+        const newTodo = makeTodo(taskTitle, taskTimestamp, true); // ambil valu lalu buat gabugin abis itu 
+        const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID); // buat variabel listcom panggil completed.. untuk dimasukin ke div html 
+        listCompleted.append(newTodo);  // masukin ke berkas html yang waktu itu 
+        taskElement.remove();// menghapus elemn yang data nya telah diisi trus pencet tombol ceklis ilang dah 
+    } // keselurahn fungsi diatas adalah untuk memindahkan data dari "todos" ke "completed-todo"
 
 
-const list = document.getElementById(CUDAH_DIBACA);
-
-const cariform = document.forms["searchBook"].querySelector("input");
-cariform.addEventListener("keyup", (e) => {
-    const term = e.target.value.toLowerCase();
-    const Buku = list.getElementsByTagName("h3"); 
-    Array.from(Buku).forEach((Buku) => {
-        const judul = Buku.getElementsByTagName("h3").textContent;
-        if(judul.indexOf(e.target.value) != -1){
-            Buku.style.display = 'block';
-          } else {
-            Buku.style.display = 'none';
-          }
+    function removeTaskFromCompleted(taskElement) {
+        taskElement.remove(); // ngapus buat di id "completed-todo"
+    }
+    function createTrashButton(){
+        return createButton("trash-button", function(event){ // buat elemen button dengan css dari trash-button dan membuat button deng class yg sama 
+            removeTaskFromCompleted(event.target.parentElement); // event mengambil button check button lalu event menargetkan utnuk digunakan dimana dia dipanggil 
         });
-      });
+    }
+    function createCheckButton() {
+        return createButton("check-button", function(event){ // buat elemen button dengan css dari check-button dan membuat button deng class yg sama 
+            addTaskToCompleted(event.target.parentElement); // event mengambil button check button lalu event menargetkan utnuk digunakan dimana dia dipanggil 
+        });
+    }
+    function createUndoButton() {
+        return createButton("undo-button", function(event){
+            undoTaskFromCompleted(event.target.parentElement);
+        });
+    }
+    function undoTaskFromCompleted(taskElement){
+        const listUncompleted = document.getElementById(UNCOMPLETED_LIST_TODO_ID); // membuat variabel baru denga isi dari id TODOS
+        const taskTitle = taskElement.querySelector(".inner > h2").innerText;  // manggil div yang kita buat diatas trus dibikin disini dengang is h2 
+        const taskTimestamp = taskElement.querySelector(".inner > p").innerText; // sama cuman abis h2 ada p
+     
+        const newTodo = makeTodo(taskTitle, taskTimestamp, false); // ini untuk membuat variabel new todo dengan mengisi itu dari tasktitle dan timestamp 
+        const todo = findTodo(taskElement[TODO_ITEMID]);
+        todo.isCompleted = false; // a bagian property isCompleted diubah ke false, yang berarti akan mengubah statusnya menjadi ‘not completed’.
+        newTodo[TODO_ITEMID] = todo.id;
+        listUncompleted.append(newTodo);// masukin datanya ke newtodo (taskTitle, taskTimestamp)
+        taskElement.remove(); // meremove si data dari completed_todo
+        updateDataToStorage();
+    }
+
+    const TODO_ITEMID = "itemId";
+    function addTodo() {
+        const uncompletedTODOList = document.getElementById(UNCOMPLETED_LIST_TODO_ID); // buat const dari uncompletedlist
+        const textTodo = document.getElementById("title").value; //dapetin value title
+        const timestamp = document.getElementById("date").value; //dapetin value Date
+      
+        const todo = makeTodo(textTodo, timestamp, false);
+        const todoObject = composeTodoObject(textTodo, timestamp, false); //1
+       
+        todo[TODO_ITEMID] = todoObject.id;// ini berfungsi untuk mentrack perubahan pada masing masing elemn 
+        todos.push(todoObject);//2 
+        //1 dan 2 baris berfungsi untuk menyimpan objek task yang kita buat ke dalam variabel todos yang telah dibuat sebelumnya.
+        uncompletedTODOList.append(todo); // masukin lagi seperti biasa 
+        updateDataToStorage(); // Kemudian, agar data pada storage bisa up-to-date maka jangan lupa untuk memanggil
+     }
+     function addTaskToCompleted(taskElement /* HTMLELement */) {
+        const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID);
+        const taskTitle = taskElement.querySelector(".inner > h2").innerText;
+        const taskTimestamp = taskElement.querySelector(".inner > p").innerText;
+      
+        const newTodo = makeTodo(taskTitle, taskTimestamp, true);
+        const todo = findTodo(taskElement[TODO_ITEMID]); //  cari objek todo yang mau di update pada array todo
+        todo.isCompleted = true; // ubah property isCompleted menjadi true supaya TODO ini ditandai ‘selesai’,
+        newTodo[TODO_ITEMID] = todo.id; // update lagi identifier yang ada pada elemen TODO yang baru.
+      
+        listCompleted.append(newTodo);
+        taskElement.remove();
+      
+        updateDataToStorage();
+     }
+     function removeTaskFromCompleted(taskElement /* HTMLELement */) {
+ 
+        const todoPosition = findTodoIndex(taskElement[TODO_ITEMID]); // mencari objek yang mau kita hapus 
+        todos.splice(todoPosition, 1); // lalu menghapus objek tersebut dengan menggunakan fungsi splice().
+      
+        taskElement.remove();
+        updateDataToStorage();
+     } //Cara kerja dari fungsi ini adalah menghapus objek yang ada pada suatu array sesuai dengan index yang 
+    // didefinisikan pada argumen pertama dari fungsi, dengan spesifikasi jumlah objek pada argumen kedua yang akan 
+     //dihapus dimulai dari index pada argumen pertama tadi.
+    // Karena kita hanya butuh untuk menghapus satu objek saja, maka pada argumen kedua kita definisikan ke 1 (satu).
+
+
+     // buat fungsi addtodo dengan memanggil fungsi maketodo
+//===================================================================================================================\\
+   // fungsi kek update4 gitu jadi kan button tadi dah bisa ngapus nah apusan nya itu dio taro disini 
 
 
 
